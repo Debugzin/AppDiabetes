@@ -6,19 +6,19 @@ Este sistema implementa una solución automatizada para la identificación y an�
 
 ## Características Principales
 
-### 🔬 **Análisis Científico Automatizado**
+##**Análisis Científico Automatizado**
 - Detección automática de variables críticas basada en estándares ADA/WHO
 - Algoritmos de similitud semántica optimizados para terminología médica
 - Soporte multiidioma (español/inglés) para estudios internacionales
 - Métricas de calidad validadas para evaluación de datasets
 
-### 📊 **Procesamiento de Datos Robusto**
+##**Procesamiento de Datos**
 - Soporte para múltiples formatos: CSV, Excel (XLS/XLSX)
 - Validación automática de integridad de datos
 - Manejo de casos especiales (variables dietéticas distribuidas)
 - Generación de reportes estructurados para documentación científica
 
-### 🎯 **Variables Críticas Predefinidas**
+##**Variables Críticas Predefinidas**
 Basadas en literatura médica y criterios diagnósticos establecidos:
 - **Diagnósticas primarias**: Glucosa plasmática, HbA1c
 - **Antropométricas**: BMI, edad
@@ -78,7 +78,7 @@ donde **sim(c,s)** corresponde a la similitud entre una columna **c** y un sinó
 - **Sinónimo de variable**: "blood glucose"
 - **Después de normalización**: "blood glucose level" vs "blood glucose"
 - **Score calculado**: 0.812 (81.2% de similitud)
-- **Resultado**: ✅ Detectada (supera umbral de 0.6)
+- **Resultado**: Detectada (supera umbral de 0.6)
 
 ## Instalación y Configuración
 
@@ -141,20 +141,4 @@ El sistema genera automáticamente tablas con:
 - Verificación de integridad de datos
 - Generación de advertencias y sugerencias
 
-
-## Contribuciones
-
-Para contribuir al desarrollo del sistema, contacte al equipo de desarrollo.
-
-## Licencia
-
-Este proyecto está licenciado bajo la Licencia MIT - vea el archivo [LICENSE](LICENSE) para detalles.
-
-## Contacto
-
-Para preguntas o colaboraciones, contacte al equipo de desarrollo.
-
-
 ---
-
-*Sistema desarrollado para facilitar la investigación en diabetes mellitus y mejorar la calidad de la documentación científica.*
