@@ -1,0 +1,110 @@
+{
+  "glucosa": [
+    "glucosa",
+    "glucemia",
+    "glucose",
+    "blood glucose",
+    "glucosa mg dl",
+    "fpg",
+    "fasting plasma glucose",
+    "azucar en sangre",
+    "glc",
+    "glucose_mg_dl",
+    "Glucose",
+    "gluco",
+    "GLUCOSA"
+  ],
+  "bmi": [
+    "bmi",
+    "imc",
+    "indice de masa corporal",
+    "body mass index",
+    "bmi_calculado",
+    "BMI"
+  ],
+  "edad": [
+    "edad",
+    "age",
+    "years",
+    "anios",
+    "años",
+    "edad_paciente",
+    "patient_age",
+    "Age",
+    "AGE",
+    "Edad",
+    "EDAD",
+    "years_old",
+    "age_years",
+    "patient_age_years"
+  ],
+  "hba1c": [
+    "hba1c",
+    "hemoglobina glucosilada",
+    "hemoglobina glicosilada",
+    "a1c",
+    "hemoglobina_a1c",
+    "glycated_hemoglobin",
+    "HbA1c_level"
+  ],
+  "dieta": [
+    "dieta",
+    "diet",
+    "vegetales",
+    "verduras",
+    "frutas",
+    "consumo de frutas",
+    "consumo de vegetales",
+    "vegetable intake",
+    "fruit intake",
+    "consumo_frutas_diario",
+    "consumo_vegetales_diario"
+  ],
+  "obesidad": [
+    "obesidad",
+    "obesity",
+    "obese",
+    "diagnostico obesidad",
+    "diagnostico_obesidad",
+    "obesity_diagnosis"
+  ],
+  "polidipsia": [
+    "polidipsia",
+    "polydipsia",
+    "sed excesiva",
+    "excessive thirst",
+    "sed_excesiva",
+    "excessive_thirst"
+  ],
+  "embarazo": [
+    "embarazo",
+    "pregnancy",
+    "pregnant",
+    "gestacion",
+    "gestación",
+    "estado_embarazo",
+    "pregnancy_status"
+  ],
+  "diabetes": [
+    "diabetes",
+    "dia",
+    "diabet"
+  ],
+  "genero": [
+    "genero",
+    "género",
+    "gender",
+    "sex",
+    "sexo",
+    "male",
+    "female",
+    "masculino",
+    "femenino",
+    "hombre",
+    "mujer",
+    "Gender",
+    "Sex",
+    "Genero",
+    "GENERO"
+  ]
+}

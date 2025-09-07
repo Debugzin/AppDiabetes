@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block title %}Análisis - Análisis de Diabetes{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-chart-bar me-2"></i>
+            Análisis de Dataset
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-upload me-2"></i>Subir Archivo
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="formAnalisis" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="archivo" class="form-label">Seleccionar archivo CSV o Excel</label>
+                        <input class="form-control" type="file" id="archivo" accept=".csv,.xlsx,.xls" required>
+                        <div class="form-text">
+                            Formatos soportados: CSV (.csv), Excel (.xlsx, .xls)
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="umbralConfianza" class="form-label">
+                            Nivel de confianza mínimo: <span id="valorUmbral">60%</span>
+                        </label>
+                        <input type="range" class="form-range" id="umbralConfianza" min="50" max="95" value="60" step="5">
+                        <div class="form-text">
+                            <small>
+                                <strong>Bajo (50-65%):</strong> Detecta más coincidencias, menos estricto<br>
+                                <strong>Medio (70-80%):</strong> Balance entre precisión y detección<br>
+                                <strong>Alto (85-95%):</strong> Solo coincidencias muy precisas
+                            </small>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btnAnalizar">
+                        <i class="fas fa-search me-2"></i>Analizar Dataset
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Información
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small mb-2">
+                    <strong>Variables que se buscan:</strong>
+                </p>
+                <ul class="small mb-0">
+                    <li>Glucosa</li>
+                    <li>BMI (Índice de Masa Corporal)</li>
+                    <li>Edad</li>
+                    <li>HbA1c (Hemoglobina Glucosilada)</li>
+                    <li>Dieta</li>
+                    <li>Obesidad</li>
+                    <li>Polidipsia</li>
+                    <li>Embarazo</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Área de resultados -->
+<div id="resultadosContainer" style="display: none;">
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Resumen del Análisis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="estadisticas">
+                        <!-- Las estadísticas se cargarán aquí -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-table me-2"></i>Mapeo de Columnas a Variables de Salud
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="tablaResultados">
+                            <thead>
+                                <tr>
+                                    <th>Columna del Dataset</th>
+                                    <th>Estado</th>
+                                    <th>Variable de Salud</th>
+                                    <th>Confianza</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Los resultados se cargarán aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-columns me-2"></i>Columnas del Dataset
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="columnasDataset">
+                        <!-- Las columnas se mostrarán aquí -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Spinner de carga -->
+<div id="spinnerCarga" class="text-center mt-4" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Analizando...</span>
+    </div>
+    <p class="mt-2">Analizando dataset...</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Actualizar valor del slider en tiempo real
+document.getElementById('umbralConfianza').addEventListener('input', function(e) {
+    document.getElementById('valorUmbral').textContent = e.target.value + '%';
+});
+
+document.getElementById('formAnalisis').addEventListener('submit', function(e) {
+    e.preventDefault();
+    analizarDataset();
+});
+
+function analizarDataset() {
+    const archivo = document.getElementById('archivo').files[0];
+    
+    if (!archivo) {
+        mostrarAlerta('Por favor selecciona un archivo', 'warning');
+        return;
+    }
+    
+    const umbral = document.getElementById('umbralConfianza').value / 100; // Convertir a decimal
+    
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    formData.append('umbral_confianza', umbral);
+    
+    // Mostrar spinner y ocultar resultados
+    document.getElementById('spinnerCarga').style.display = 'block';
+    document.getElementById('resultadosContainer').style.display = 'none';
+    document.getElementById('btnAnalizar').disabled = true;
+    
+    fetch('/api/analizar', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('spinnerCarga').style.display = 'none';
+        document.getElementById('btnAnalizar').disabled = false;
+        
+        if (data.success) {
+            mostrarResultados(data);
+        } else {
+            mostrarAlerta(data.error || 'Error al analizar el archivo', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('spinnerCarga').style.display = 'none';
+        document.getElementById('btnAnalizar').disabled = false;
+        mostrarAlerta('Error al analizar el archivo', 'danger');
+    });
+}
+
+function mostrarResultados(data) {
+    // Mostrar estadísticas
+    const estadisticas = data.estadisticas;
+    const estadisticasHTML = `
+        <div class="col-md-3 text-center">
+            <div class="border rounded p-3">
+                <h4 class="text-primary">${data.filas.toLocaleString()}</h4>
+                <small class="text-muted">Filas</small>
+            </div>
+        </div>
+        <div class="col-md-3 text-center">
+            <div class="border rounded p-3">
+                <h4 class="text-info">${data.columnas_total}</h4>
+                <small class="text-muted">Columnas Totales</small>
+            </div>
+        </div>
+        <div class="col-md-3 text-center">
+            <div class="border rounded p-3">
+                <h4 class="text-success">${estadisticas.variables_encontradas}/${estadisticas.total_variables}</h4>
+                <small class="text-muted">Variables Encontradas</small>
+            </div>
+        </div>
+        <div class="col-md-3 text-center">
+            <div class="border rounded p-3">
+                <h4 class="text-warning">${estadisticas.cobertura_porcentaje || 0}%</h4>
+                <small class="text-muted">Cobertura</small>
+            </div>
+        </div>
+    `;
+    document.getElementById('estadisticas').innerHTML = estadisticasHTML;
+    
+    // TABLA SIMPLE: Todas las columnas del dataset primero
+    const tbody = document.querySelector('#tablaResultados tbody');
+    tbody.innerHTML = '';
+    
+    // Crear mapa de resultados por columna - INCLUIR TODAS las coincidencias, no solo las encontradas
+    const mapaResultados = {};
+    data.resultados.forEach(resultado => {
+        if (resultado.columna && resultado.confianza > 0) {
+            mapaResultados[resultado.columna] = resultado;
+        }
+    });
+    
+    // Mostrar TODAS las columnas del dataset
+    data.columnas.forEach(columna => {
+        const resultado = mapaResultados[columna];
+        
+        if (resultado) {
+            // Esta columna tiene alguna coincidencia con una variable de salud
+            const cumpleUmbral = resultado.encontrada; // Si cumple el umbral configurado
+            const estadoBadge = cumpleUmbral ? 
+                '<span class="badge bg-success">✅ Detectada</span>' : 
+                '<span class="badge bg-warning">⚠️ Bajo umbral</span>';
+            
+            const fila = `
+                <tr>
+                    <td><code class="bg-light p-1 rounded">${columna}</code></td>
+                    <td>${estadoBadge}</td>
+                    <td><strong>${resultado.variable.charAt(0).toUpperCase() + resultado.variable.slice(1)}</strong></td>
+                    <td>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar ${resultado.confianza >= 0.9 ? 'bg-success' : resultado.confianza >= 0.8 ? 'bg-warning' : 'bg-danger'}" 
+                                 style="width: ${resultado.confianza * 100}%">
+                                ${(resultado.confianza * 100).toFixed(1)}%
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += fila;
+        } else {
+            // Esta columna NO tiene ninguna coincidencia
+            const fila = `
+                <tr>
+                    <td><code class="bg-light p-1 rounded">${columna}</code></td>
+                    <td><span class="badge bg-secondary">❌ No encontrado</span></td>
+                    <td><em class="text-muted">-</em></td>
+                    <td>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-light" style="width: 100%">
+                                <span class="text-muted">0.0%</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += fila;
+        }
+    });
+    
+    // Mostrar columnas del dataset
+    const columnasHTML = data.columnas.map(col => 
+        `<span class="badge bg-light text-dark me-2 mb-2">${col}</span>`
+    ).join('');
+    document.getElementById('columnasDataset').innerHTML = columnasHTML;
+    
+    // Mostrar variables faltantes si las hay
+    if (estadisticas.variables_faltantes.length > 0) {
+        const variablesFaltantesHTML = estadisticas.variables_faltantes.map(variable => 
+            `<span class="badge bg-warning text-dark me-1">${variable}</span>`
+        ).join('');
+        
+        mostrarAlerta(
+            `Variables no detectadas: ${variablesFaltantesHTML}`, 
+            'warning'
+        );
+    }
+    
+    // Mostrar contenedor de resultados
+    document.getElementById('resultadosContainer').style.display = 'block';
+    
+    // Scroll hacia los resultados
+    document.getElementById('resultadosContainer').scrollIntoView({ 
+        behavior: 'smooth' 
+    });
+}
+
+function mostrarAlerta(mensaje, tipo) {
+    const alertaDiv = document.createElement('div');
+    alertaDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
+    alertaDiv.innerHTML = `
+        ${mensaje}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(alertaDiv, container.firstChild);
+    
+    setTimeout(() => {
+        alertaDiv.remove();
+    }, 8000);
+}
+</script>
+{% endblock %}

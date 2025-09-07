@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Análisis de Diabetes{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="jumbotron bg-white p-5 rounded shadow-sm mb-4">
+            <h1 class="display-4">
+                <i class="fas fa-heartbeat text-primary me-3"></i>
+                Análisis de Datasets de Diabetes
+            </h1>
+            <p class="lead">Sistema para parametrizar variables críticas y analizar datasets de salud</p>
+            <hr class="my-4">
+            <p>Esta aplicación te permite configurar variables de salud y analizar si tus datasets contienen la información necesaria para estudios de diabetes.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-cog fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Parametrización</h5>
+                <p class="card-text">
+                    Gestiona las variables críticas y sus sinónimos. Crea, edita y elimina las variables que necesitas buscar en tus datasets.
+                </p>
+                <a href="{{ url_for('parametrizacion') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right me-2"></i>Ir a Parametrización
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-bar fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Análisis de Dataset</h5>
+                <p class="card-text">
+                    Sube archivos CSV o Excel para analizar qué variables críticas están presentes y cuáles faltan en tus datos.
+                </p>
+                <a href="{{ url_for('analisis') }}" class="btn btn-success">
+                    <i class="fas fa-arrow-right me-2"></i>Ir a Análisis
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Variables Principales
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>El sistema busca las siguientes 8 variables críticas en tus datasets:</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check-circle text-success me-2"></i><strong>Glucosa:</strong> Niveles de glucosa en sangre</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i><strong>BMI:</strong> Índice de masa corporal</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i><strong>Edad:</strong> Edad del paciente</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i><strong>HbA1c:</strong> Hemoglobina glucosilada</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check-circle text-success me-2"></i><strong>Dieta:</strong> Información dietética</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i><strong>Obesidad:</strong> Diagnóstico de obesidad</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i><strong>Polidipsia:</strong> Sed excesiva</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i><strong>Embarazo:</strong> Estado de embarazo</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

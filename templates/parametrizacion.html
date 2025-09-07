@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Parametrización - Análisis de Diabetes{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-cog me-2"></i>
+                Parametrización de Variables
+            </h2>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNuevaVariable">
+                <i class="fas fa-plus me-2"></i>Nueva Variable
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Variables Configuradas</h5>
+            </div>
+            <div class="card-body">
+                <div id="variablesContainer">
+                    <!-- Las variables se cargarán aquí dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para nueva variable -->
+<div class="modal fade" id="modalNuevaVariable" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nueva Variable</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formNuevaVariable">
+                    <div class="mb-3">
+                        <label for="nombreVariable" class="form-label">Nombre de la Variable</label>
+                        <input type="text" class="form-control" id="nombreVariable" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sinonimosVariable" class="form-label">Sinónimos (separados por coma)</label>
+                        <textarea class="form-control" id="sinonimosVariable" rows="3" required 
+                                  placeholder="Ejemplo: glucosa, glucose, blood sugar, glucemia"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="crearVariable()">Crear Variable</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar variable -->
+<div class="modal fade" id="modalEditarVariable" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Variable</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditarVariable">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre de la Variable</label>
+                        <input type="text" class="form-control" id="nombreVariableEdit" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sinonimosVariableEdit" class="form-label">Sinónimos (separados por coma)</label>
+                        <textarea class="form-control" id="sinonimosVariableEdit" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarEdicion()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let variableActual = '';
+
+// Cargar variables al iniciar la página
+document.addEventListener('DOMContentLoaded', function() {
+    cargarVariables();
+});
+
+function cargarVariables() {
+    fetch('/api/variables')
+        .then(response => response.json())
+        .then(variables => {
+            mostrarVariables(variables);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarAlerta('Error al cargar variables', 'danger');
+        });
+}
+
+function mostrarVariables(variables) {
+    const container = document.getElementById('variablesContainer');
+    container.innerHTML = '';
+    
+    for (const [nombre, sinonimos] of Object.entries(variables)) {
+        const variableCard = `
+            <div class="card mb-3" id="variable-${nombre}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-primary">
+                                <i class="fas fa-tag me-2"></i>${nombre.charAt(0).toUpperCase() + nombre.slice(1)}
+                            </h6>
+                            <div class="mt-2">
+                                ${sinonimos.map(sin => `<span class="badge bg-light text-dark me-1 mb-1">${sin}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editarVariable('${nombre}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="eliminarVariable('${nombre}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.innerHTML += variableCard;
+    }
+}
+
+function crearVariable() {
+    const nombre = document.getElementById('nombreVariable').value.trim().toLowerCase();
+    const sinonimosTexto = document.getElementById('sinonimosVariable').value.trim();
+    
+    if (!nombre || !sinonimosTexto) {
+        mostrarAlerta('Por favor complete todos los campos', 'warning');
+        return;
+    }
+    
+    const sinonimos = sinonimosTexto.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    
+    fetch('/api/variables', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            nombre: nombre,
+            sinonimos: sinonimos
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarAlerta('Variable creada exitosamente', 'success');
+            cargarVariables();
+            document.getElementById('formNuevaVariable').reset();
+            bootstrap.Modal.getInstance(document.getElementById('modalNuevaVariable')).hide();
+        } else {
+            mostrarAlerta(data.error || 'Error al crear variable', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarAlerta('Error al crear variable', 'danger');
+    });
+}
+
+function editarVariable(nombre) {
+    variableActual = nombre;
+    
+    fetch('/api/variables')
+        .then(response => response.json())
+        .then(variables => {
+            const sinonimos = variables[nombre];
+            document.getElementById('nombreVariableEdit').value = nombre.charAt(0).toUpperCase() + nombre.slice(1);
+            document.getElementById('sinonimosVariableEdit').value = sinonimos.join(', ');
+            
+            new bootstrap.Modal(document.getElementById('modalEditarVariable')).show();
+        });
+}
+
+function guardarEdicion() {
+    const sinonimosTexto = document.getElementById('sinonimosVariableEdit').value.trim();
+    
+    if (!sinonimosTexto) {
+        mostrarAlerta('Por favor ingrese al menos un sinónimo', 'warning');
+        return;
+    }
+    
+    const sinonimos = sinonimosTexto.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    
+    fetch(`/api/variables/${variableActual}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            sinonimos: sinonimos
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarAlerta('Variable actualizada exitosamente', 'success');
+            cargarVariables();
+            bootstrap.Modal.getInstance(document.getElementById('modalEditarVariable')).hide();
+        } else {
+            mostrarAlerta(data.error || 'Error al actualizar variable', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarAlerta('Error al actualizar variable', 'danger');
+    });
+}
+
+function eliminarVariable(nombre) {
+    if (confirm(`¿Estás seguro de que quieres eliminar la variable "${nombre}"?`)) {
+        fetch(`/api/variables/${nombre}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarAlerta('Variable eliminada exitosamente', 'success');
+                cargarVariables();
+            } else {
+                mostrarAlerta(data.error || 'Error al eliminar variable', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarAlerta('Error al eliminar variable', 'danger');
+        });
+    }
+}
+
+function mostrarAlerta(mensaje, tipo) {
+    const alertaDiv = document.createElement('div');
+    alertaDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
+    alertaDiv.innerHTML = `
+        ${mensaje}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(alertaDiv, container.firstChild);
+    
+    setTimeout(() => {
+        alertaDiv.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}
